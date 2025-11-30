@@ -1,0 +1,42 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-081b71baf5bc36be247eb06bdbc30b023ec00d97",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/EventFactory.sol": "project/contracts/EventFactory.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/EventContract.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.19;\n\ncontract EventContract {\n    address public organizer;\n    string public name;\n    string public date;\n    string public time;\n    string public imageURL;\n    \n    // YENİ ALANLAR\n    string public locationName; // Örn: Küçükçiftlik Park\n    string public city;         // Örn: İstanbul\n    string public country;      // Örn: Türkiye\n    string public mapsLink;     // Örn: https://maps.google.com/...\n\n    uint256 public price;\n    uint256 public capacity;\n    uint256 public soldCount;\n    bool public isCancelled = false;\n\n    mapping(address => bool) public hasTicket;\n    mapping(address => bool) public isRefunded;\n\n    event TicketSold(address indexed buyer, uint256 ticketId);\n    event EventCancelled();\n\n    constructor(\n        address _organizer,\n        string memory _name,\n        string memory _date,\n        string memory _time,\n        string memory _imageURL,\n        string memory _locationName, // YENİ\n        string memory _city,         // YENİ\n        string memory _country,      // YENİ\n        string memory _mapsLink,     // YENİ\n        uint256 _price,\n        uint256 _capacity\n    ) {\n        organizer = _organizer;\n        name = _name;\n        date = _date;\n        time = _time;\n        imageURL = _imageURL;\n        locationName = _locationName;\n        city = _city;\n        country = _country;\n        mapsLink = _mapsLink;\n        price = _price;\n        capacity = _capacity;\n        soldCount = 0;\n    }\n\n    function buyTicket() external payable {\n        require(!isCancelled, \"Etkinlik iptal edildi\");\n        require(msg.value == price, \"Yanlis miktar\");\n        require(soldCount < capacity, \"Dolu\");\n        require(!hasTicket[msg.sender], \"Zaten biletin var\");\n        hasTicket[msg.sender] = true;\n        soldCount++;\n        emit TicketSold(msg.sender, soldCount);\n    }\n\n    function cancelEvent() external {\n        require(msg.sender == organizer, \"Yetkisiz\");\n        require(!isCancelled, \"Zaten iptal\");\n        isCancelled = true;\n        emit EventCancelled();\n    }\n\n    function getRefund() external {\n        require(isCancelled, \"Iptal degil\");\n        require(hasTicket[msg.sender], \"Bilet yok\");\n        require(!isRefunded[msg.sender], \"Iade alindi\");\n        isRefunded[msg.sender] = true;\n        hasTicket[msg.sender] = false;\n        payable(msg.sender).transfer(price);\n    }\n\n    function withdraw() external {\n        require(msg.sender == organizer, \"Yetkisiz\");\n        require(!isCancelled, \"Iptal\");\n        payable(organizer).transfer(address(this).balance);\n    }\n}"
+      },
+      "project/contracts/EventFactory.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.19;\nimport \"./EventContract.sol\";\n\ncontract EventFactory {\n    EventContract[] public deployedEvents;\n\n    function createEvent(\n        string memory name,\n        string memory date,\n        string memory time,\n        string memory imageURL,\n        string memory locationName,\n        string memory city,\n        string memory country,\n        string memory mapsLink,\n        uint256 price,\n        uint256 capacity\n    ) public {\n        EventContract newEvent = new EventContract(\n            msg.sender, name, date, time, imageURL, \n            locationName, city, country, mapsLink, \n            price, capacity\n        );\n        deployedEvents.push(newEvent);\n    }\n\n    function getDeployedEvents() public view returns (EventContract[] memory) {\n        return deployedEvents;\n    }\n}"
+      }
+    }
+  }
+}

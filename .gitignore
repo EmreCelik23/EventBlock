@@ -1,0 +1,25 @@
+# Root node modules
+/node_modules
+
+# Root build outputs
+/dist
+/bundle
+
+# Hardhat
+/artifacts
+/cache
+/types
+/coverage
+
+# Env files (çok önemli: PRIVATE_KEY dışarı çıkmasın)
+.env
+.env.*    # varsa .env.local vs.
+
+# Frontend (Vite + React)
+frontend/node_modules
+frontend/dist
+frontend/.env
+frontend/.env.*
+
+# macOS
+.DS_Store

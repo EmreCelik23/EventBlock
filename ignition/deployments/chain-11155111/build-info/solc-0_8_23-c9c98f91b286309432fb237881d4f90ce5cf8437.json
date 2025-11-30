@@ -1,0 +1,43 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_23-c9c98f91b286309432fb237881d4f90ce5cf8437",
+  "solcVersion": "0.8.23",
+  "solcLongVersion": "0.8.23+commit.f704f362",
+  "userSourceNameMap": {
+    "contracts/EventFactory.sol": "project/contracts/EventFactory.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "shanghai",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": [],
+      "viaIR": true
+    },
+    "sources": {
+      "project/contracts/EventContract.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.23;\n\ncontract EventContract {\n    address public organizer;\n    string public name;\n    string public date; \n    string public time;\n    string public imageURL;\n    \n    string public locationName;\n    string public city;        \n    string public country;     \n    string public mapsLink;    \n\n    uint256 public price;\n    uint256 public capacity;\n    uint256 public soldCount;\n    \n    uint256 public eventTimestamp; // 🕒 Zaman Damgası\n\n    bool public isCancelled = false;\n\n    mapping(address => bool) public hasTicket;\n    mapping(address => bool) public isRefunded;\n\n    // ✅ Biletin kapıda bir kez okutulmasını takip etmek için\n    mapping(address => bool) public isTicketUsed;\n\n    event TicketSold(address indexed buyer, uint256 ticketId);\n    event EventCancelled();\n    event TicketUsed(address indexed user, uint256 timestamp);\n\n    constructor(\n        address _organizer,\n        string memory _name,\n        string memory _date,\n        string memory _time,\n        string memory _imageURL,\n        string memory _locationName,\n        string memory _city,        \n        string memory _country,     \n        string memory _mapsLink,    \n        uint256 _price,\n        uint256 _capacity,\n        uint256 _eventTimestamp \n    ) {\n        organizer = _organizer;\n        name = _name;\n        date = _date;\n        time = _time;\n        imageURL = _imageURL;\n        locationName = _locationName;\n        city = _city;\n        country = _country;\n        mapsLink = _mapsLink;\n        price = _price;\n        capacity = _capacity;\n        soldCount = 0;\n        eventTimestamp = _eventTimestamp;\n    }\n\n    function buyTicket() external payable {\n        require(!isCancelled, \"Etkinlik iptal edildi\");\n\n        // 🛡️ GUVENLIK 1: Etkinlik zamanı geçtiyse bilet satışı durur\n        require(block.timestamp < eventTimestamp, \"Satislar kapandi, etkinlik basladi/bitti\"); \n        \n        require(msg.value == price, \"Yanlis miktar\");\n        require(soldCount < capacity, \"Dolu\");\n        require(!hasTicket[msg.sender], \"Zaten biletin var\");\n        \n        hasTicket[msg.sender] = true;\n\n        // 🔄 Aynı cüzdan daha once iade almis veya kullanmis olsa bile,\n        // yeni bilette durumlar baştan başlar:\n        isRefunded[msg.sender] = false;\n        isTicketUsed[msg.sender] = false;\n\n        soldCount++;\n        emit TicketSold(msg.sender, soldCount);\n    }\n\n    function cancelEvent() external {\n        require(msg.sender == organizer, \"Yetkisiz\");\n        require(!isCancelled, \"Zaten iptal\");\n\n        // 🛡️ GUVENLIK 2: Etkinlik bittikten sonra organizatör iptal edemez\n        require(block.timestamp < eventTimestamp, \"Gecmis etkinlik iptal edilemez\");\n        \n        isCancelled = true;\n        emit EventCancelled();\n    }\n\n    function getRefund() external {\n        require(isCancelled, \"Iptal degil\");\n        require(hasTicket[msg.sender], \"Bileti yok\");\n\n        // 🛡️ Kullanilmış bilet iade almasın (double spend engeli)\n        require(!isTicketUsed[msg.sender], \"Bilet kullanilmis, iade olmaz\");\n\n        require(!isRefunded[msg.sender], \"Iade alindi\");\n        \n        isRefunded[msg.sender] = true;\n        hasTicket[msg.sender] = false;\n        \n        payable(msg.sender).transfer(price);\n    }\n\n    function withdraw() external {\n        require(msg.sender == organizer, \"Yetkisiz\");\n        require(!isCancelled, \"Etkinlik iptal edilmis, para cekilemez!\");\n\n        // 🛡️ GUVENLIK 3: Rug Pull Koruması (TimeLock)\n        require(block.timestamp > eventTimestamp, \"Etkinlik bitmeden para cekilemez!\"); \n        \n        payable(organizer).transfer(address(this).balance);\n    }\n\n    /// 🟢 Kapıdaki turnike / görevli için:\n    /// Kullanıcının biletini tek seferlik \"kullanılmış\" işaretler.\n    function useTicket(address user) external {\n        require(msg.sender == organizer, \"Sadece organizator kullanabilir\");\n        require(!isCancelled, \"Etkinlik iptal edildi\");\n        require(hasTicket[user], \"Bu kullanicinin bileti yok\");\n        require(!isTicketUsed[user], \"Bilet zaten kullanilmis\");\n\n        // İstersen zaman penceresi de koyabilirsin:\n        // require(block.timestamp <= eventTimestamp + 1 hours, \"Etkinlik sonrasi bilet kullanilamaz\");\n\n        isTicketUsed[user] = true;\n        emit TicketUsed(user, block.timestamp);\n    }\n}"
+      },
+      "project/contracts/EventFactory.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.23;\n\n// Aynı klasördeki EventContract dosyasını içeri aktarıyoruz\nimport \"./EventContract.sol\";\n\ncontract EventFactory {\n    EventContract[] public deployedEvents;\n\n    function createEvent(\n        string memory name,\n        string memory date,\n        string memory time,\n        string memory imageURL,\n        string memory locationName,\n        string memory city,\n        string memory country,\n        string memory mapsLink,\n        uint256 price,\n        uint256 capacity,\n        uint256 eventTimestamp \n    ) public {\n        \n        // Yeni kontratı oluştururken bu zaman bilgisini de gönderiyoruz\n        EventContract newEvent = new EventContract(\n            msg.sender,     // organizer\n            name,\n            date,\n            time,\n            imageURL,\n            locationName,\n            city,\n            country,\n            mapsLink,\n            price,\n            capacity,\n            eventTimestamp  \n        );\n        \n        deployedEvents.push(newEvent);\n    }\n\n    function getDeployedEvents() public view returns (EventContract[] memory) {\n        return deployedEvents;\n    }\n}"
+      }
+    }
+  }
+}
