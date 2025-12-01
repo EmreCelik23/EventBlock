@@ -1,5 +1,7 @@
 # EventBlock 🎟️
 
+**https://event-block-zeta.vercel.app**
+
 **Blokzincir Tabanlı Merkeziyetsiz Etkinlik ve Biletleme Platformu**
 
 > *"Bilet, sadece bir kağıt parçası değil; bir deneyime giriş sertifikasıdır."*
