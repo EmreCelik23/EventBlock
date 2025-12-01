@@ -1,5 +1,7 @@
 # EventBlock 🎟️
 
+**https://event-block-zeta.vercel.app**
+
 **Blokzincir Tabanlı Merkeziyetsiz Etkinlik ve Biletleme Platformu**
 
 > *"Bilet, sadece bir kağıt parçası değil; bir deneyime giriş sertifikasıdır."*
@@ -40,16 +42,6 @@ Bu proje modern Web3 ve Frontend teknolojileri kullanılarak geliştirilmiştir:
   * **Harita:** React Leaflet & OpenStreetMap.
   * **UI/UX:** Responsive CSS Modules, React Toastify (Bildirimler).
   * **Güvenlik:** EIP-712 standardına benzer kriptografik imza doğrulama mekanizması.
-
-## 📸 Ekran Görüntüleri
-
-| Ana Sayfa | Bilet Detayı |
-|:---:|:---:|
-| *(Buraya ekran görüntüsü ekleyin)* | *(Buraya ekran görüntüsü ekleyin)* |
-
-| Organizatör Paneli | QR Doğrulama |
-|:---:|:---:|
-| *(Buraya ekran görüntüsü ekleyin)* | *(Buraya ekran görüntüsü ekleyin)* |
 
 ## ⚙️ Kurulum ve Çalıştırma
 
@@ -103,12 +95,6 @@ EventBlock, mobil öncelikli (mobile-first) bir yaklaşımla tasarlanmamış ols
 4.  Dalınızı Push edin (`git push origin yeni-ozellik`).
 5.  Bir Pull Request oluşturun.
 
-## 📄 Lisans
-
-Bu proje MIT Lisansı ile lisanslanmıştır.
-
 -----
 
-\<p align="center"\>
-\<sub\>EventBlock © 2024 - Blockchain ile Güvenli Eğlence\</sub\>
-\</p\>
+EventBlock © 2025 - Blockchain ile Güvenli Eğlence
