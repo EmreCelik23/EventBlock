@@ -17,14 +17,13 @@ contract EventContract {
     uint256 public capacity;
     uint256 public soldCount;
     
-    uint256 public eventTimestamp; // 🕒 Zaman Damgası
+    uint256 public eventTimestamp; 
 
     bool public isCancelled = false;
 
     mapping(address => bool) public hasTicket;
     mapping(address => bool) public isRefunded;
 
-    // ✅ Biletin kapıda bir kez okutulmasını takip etmek için
     mapping(address => bool) public isTicketUsed;
 
     event TicketSold(address indexed buyer, uint256 ticketId);
@@ -63,7 +62,6 @@ contract EventContract {
     function buyTicket() external payable {
         require(!isCancelled, "Etkinlik iptal edildi");
 
-        // 🛡️ GUVENLIK 1: Etkinlik zamanı geçtiyse bilet satışı durur
         require(block.timestamp < eventTimestamp, "Satislar kapandi, etkinlik basladi/bitti"); 
         
         require(msg.value == price, "Yanlis miktar");
@@ -72,8 +70,6 @@ contract EventContract {
         
         hasTicket[msg.sender] = true;
 
-        // 🔄 Aynı cüzdan daha once iade almis veya kullanmis olsa bile,
-        // yeni bilette durumlar baştan başlar:
         isRefunded[msg.sender] = false;
         isTicketUsed[msg.sender] = false;
 
@@ -85,7 +81,6 @@ contract EventContract {
         require(msg.sender == organizer, "Yetkisiz");
         require(!isCancelled, "Zaten iptal");
 
-        // 🛡️ GUVENLIK 2: Etkinlik bittikten sonra organizatör iptal edemez
         require(block.timestamp < eventTimestamp, "Gecmis etkinlik iptal edilemez");
         
         isCancelled = true;
@@ -96,7 +91,6 @@ contract EventContract {
         require(isCancelled, "Iptal degil");
         require(hasTicket[msg.sender], "Bileti yok");
 
-        // 🛡️ Kullanilmış bilet iade almasın (double spend engeli)
         require(!isTicketUsed[msg.sender], "Bilet kullanilmis, iade olmaz");
 
         require(!isRefunded[msg.sender], "Iade alindi");
@@ -111,22 +105,16 @@ contract EventContract {
         require(msg.sender == organizer, "Yetkisiz");
         require(!isCancelled, "Etkinlik iptal edilmis, para cekilemez!");
 
-        // 🛡️ GUVENLIK 3: Rug Pull Koruması (TimeLock)
         require(block.timestamp > eventTimestamp, "Etkinlik bitmeden para cekilemez!"); 
         
         payable(organizer).transfer(address(this).balance);
     }
 
-    /// 🟢 Kapıdaki turnike / görevli için:
-    /// Kullanıcının biletini tek seferlik "kullanılmış" işaretler.
     function useTicket(address user) external {
         require(msg.sender == organizer, "Sadece organizator kullanabilir");
         require(!isCancelled, "Etkinlik iptal edildi");
         require(hasTicket[user], "Bu kullanicinin bileti yok");
         require(!isTicketUsed[user], "Bilet zaten kullanilmis");
-
-        // İstersen zaman penceresi de koyabilirsin:
-        // require(block.timestamp <= eventTimestamp + 1 hours, "Etkinlik sonrasi bilet kullanilamaz");
 
         isTicketUsed[user] = true;
         emit TicketUsed(user, block.timestamp);

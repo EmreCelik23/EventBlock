@@ -28,6 +28,9 @@ interface QRDataState {
 
 const ICON_COLOR = '#e91e63';
 
+// --- EK İKON ---
+const LockIcon = () => <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>;
+
 export default function MyTickets() {
     const [allTickets, setAllTickets] = useState<Ticket[]>([]);
     const [loading, setLoading] = useState(true);
@@ -36,8 +39,19 @@ export default function MyTickets() {
     const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
     const [qrDataState, setQrDataState] = useState<QRDataState | null>(null);
     const [timeLeft, setTimeLeft] = useState(30);
+
+    // --- RESPONSIVE STATE ---
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    const isMobile = windowWidth < 600; 
+
     const navigate = useNavigate();
     const timerRef = useRef<any>(null);
+
+    useEffect(() => {
+        const handleResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // --- HELPER: GEÇMİŞ KONTROLÜ ---
     const isEventPast = (dateStr: string, timeStr: string) => {
@@ -47,13 +61,11 @@ export default function MyTickets() {
         return now > eventDate;
     };
 
-    // --- 🔥 GÜNCELLENMİŞ FİLTRELEME MANTIĞI ---
+    // --- FİLTRELEME MANTIĞI ---
     const filteredTickets = useMemo(() => {
         if (activeTab === 'active') {
-            // AKTİF: Gelecek tarihli VE İptal Edilmemiş
             return allTickets.filter(t => !isEventPast(t.date, t.time) && !t.isCancelled);
         } else {
-            // GEÇMİŞ: Tarihi Geçmiş VEYA İptal Edilmiş
             return allTickets.filter(t => isEventPast(t.date, t.time) || t.isCancelled);
         }
     }, [allTickets, activeTab]);
@@ -182,6 +194,11 @@ export default function MyTickets() {
         </div>
     );
 
+    // --- RESPONSIVE STYLE CONSTANTS ---
+    const ticketImageWidth = isMobile ? '100px' : '140px';
+    const notchLeftPos = isMobile ? '92px' : '132px';
+    const lineLeftPos = isMobile ? '99px' : '139px';
+
     return (
         <div style={{
             minHeight: '100vh',
@@ -191,19 +208,19 @@ export default function MyTickets() {
         }}>
 
             {/* HEADER */}
-            <div style={{ padding: '60px 0 20px' }}>
-                <div style={containerStyle}>
+            <div style={{ padding: isMobile ? '30px 0 20px' : '60px 0 20px' }}>
+                <div style={{ ...containerStyle, padding: isMobile ? '0 20px' : '0 25px' }}>
                     <div>
-                        <h1 style={{ margin: 0, fontSize: '36px', color: '#0f172a', fontWeight: '900', letterSpacing: '-1.5px' }}>Cüzdanım</h1>
-                        <p style={{ margin: '5px 0 0 0', color: '#64748b', fontSize: '16px', fontWeight: '400' }}>Tüm etkinlik giriş anahtarların burada.</p>
+                        <h1 style={{ margin: 0, fontSize: isMobile ? '28px' : '36px', color: '#0f172a', fontWeight: '900', letterSpacing: '-1.5px' }}>Cüzdanım</h1>
+                        <p style={{ margin: '5px 0 0 0', color: '#64748b', fontSize: isMobile ? '14px' : '16px', fontWeight: '400' }}>Tüm etkinlik giriş anahtarların burada.</p>
                     </div>
                 </div>
             </div>
 
-            <div style={containerStyle}>
+            <div style={{ ...containerStyle, padding: isMobile ? '0 20px' : '0 25px' }}>
 
                 {/* TABS */}
-                <div style={tabsContainerStyle}>
+                <div style={{ ...tabsContainerStyle, overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '5px' }}>
                     <div
                         style={activeTab === 'active' ? activeTabStyle : inactiveTabStyle}
                         onClick={() => setActiveTab('active')}
@@ -230,10 +247,10 @@ export default function MyTickets() {
                         <div style={{ fontSize: '60px', marginBottom: '20px', opacity: 0.6 }}>
                             {activeTab === 'active' ? '🎫' : '🕰️'}
                         </div>
-                        <h2 style={{ color: '#1e293b', marginBottom: '10px' }}>
+                        <h2 style={{ color: '#1e293b', marginBottom: '10px', fontSize: isMobile ? '20px' : '24px' }}>
                             {activeTab === 'active' ? 'Aktif biletin yok.' : 'Geçmiş etkinlik yok.'}
                         </h2>
-                        <p style={{ color: '#64748b', maxWidth: '400px', margin: '0 auto 30px', lineHeight: '1.6' }}>
+                        <p style={{ color: '#64748b', maxWidth: '400px', margin: '0 auto 30px', lineHeight: '1.6', fontSize: isMobile ? '14px' : '16px' }}>
                             {activeTab === 'active'
                                 ? 'Dünyanın en iyi etkinliklerine katılmak için hemen bilet al.'
                                 : 'Katıldığın veya iptal edilen etkinlikler burada listelenir.'}
@@ -243,66 +260,90 @@ export default function MyTickets() {
                         )}
                     </div>
                 ) : (
-                    <div style={gridStyle}>
+                    <div style={{
+                        ...gridStyle,
+                        gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(350px, 1fr))"
+                    }}>
                         {filteredTickets.map((ticket, index) => {
-                            // İptal edilmiş veya geçmiş tarihli biletler "Pasif" görünecek
                             const isPastItem = activeTab === 'past';
+
+                            const isEventEnded = isEventPast(ticket.date, ticket.time);
+                            const isQrDisabled = ticket.isCancelled || ticket.isUsed || isEventEnded;
 
                             return (
                                 <div key={index} style={{
                                     ...ticketCardStyle,
-                                    filter: isPastItem ? 'grayscale(100%) opacity(0.8)' : 'none', // Siyah-beyaz efekt
+                                    height: '220px',
+                                    filter: isPastItem ? 'grayscale(100%) opacity(0.8)' : 'none',
                                     borderColor: isPastItem ? '#e2e8f0' : 'white'
                                 }}>
-                                    <div style={ticketLeftStyle}>
+                                    <div style={{ ...ticketLeftStyle, width: ticketImageWidth }}>
                                         <img src={ticket.image} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => (e.target as any).src = 'https://via.placeholder.com/150'} />
                                         <div style={overlayGradient}></div>
                                         <div style={dateOverlay}>
-                                            <span style={{ fontSize: '28px', fontWeight: '800', lineHeight: '1' }}>{ticket.date.split('-')[2]}</span>
-                                            <span style={{ fontSize: '12px', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '1px' }}>{new Date(ticket.date).toLocaleString('tr-TR', { month: 'short' })}</span>
+                                            <span style={{ fontSize: isMobile ? '24px' : '28px', fontWeight: '800', lineHeight: '1' }}>{ticket.date.split('-')[2]}</span>
+                                            <span style={{ fontSize: isMobile ? '10px' : '12px', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '1px' }}>{new Date(ticket.date).toLocaleString('tr-TR', { month: 'short' })}</span>
                                         </div>
                                     </div>
 
-                                    <div style={ticketRightStyle}>
-                                        <div style={{ flex: 1 }}>
+                                    <div style={{ ...ticketRightStyle, padding: isMobile ? '15px 15px 15px 25px' : '22px 22px 22px 35px' }}>
+                                        <div style={{ flex: 1, minWidth: 0 }}> {/* minWidth:0 text-overflow için kritik */}
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                                                 {ticket.isCancelled ? (
-                                                    <span style={cancelledTag}>İPTAL EDİLDİ</span>
+                                                    <span style={cancelledTag}>İPTAL</span>
                                                 ) : ticket.isUsed ? (
                                                     <span style={usedTag}>KULLANILDI</span>
                                                 ) : isEventPast(ticket.date, ticket.time) ? (
-                                                <span style={pastTag}>GEÇMİŞ</span>
+                                                    <span style={pastTag}>GEÇMİŞ</span>
                                                 ) : (
-                                                <span style={activeTag}>AKTİF</span>
-)}
-                                                <span style={priceTag}>{ticket.price} ETH</span>
+                                                    <span style={activeTag}>AKTİF</span>
+                                                )}
+                                                <span style={priceTag}>{ticket.price} E</span>
                                             </div>
-                                            <h3 style={ticketTitle}>{ticket.eventName}</h3>
+                                            <h3 style={{ ...ticketTitle, fontSize: isMobile ? '15px' : '17px' }}>{ticket.eventName}</h3>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
-                                                <p style={ticketInfo}>📍 {ticket.location.length > 25 ? ticket.location.substring(0, 25) + '...' : ticket.location}</p>
+                                                <p style={ticketInfo}>📍 {ticket.location.length > (isMobile ? 18 : 25) ? ticket.location.substring(0, (isMobile ? 18 : 25)) + '...' : ticket.location}</p>
                                                 <p style={ticketInfo}>⏰ {ticket.time}</p>
                                             </div>
                                         </div>
 
                                         <div style={actionRow}>
                                             {ticket.isCancelled ? (
-                                                // İPTAL EDİLDİYSE -> İADE AL
-                                                <button onClick={() => getRefund(ticket.eventAddress)} style={refundBtnStyle}>💸 İade Al</button>
-                                            ) : isPastItem ? (
-                                                // SADECE GEÇMİŞSE -> DETAY
-                                                <button onClick={() => setSelectedTicket(ticket)} style={{ ...detailBtnStyle, width: '100%' }}>ETKİNLİK DETAYI</button>
+                                                <button onClick={() => getRefund(ticket.eventAddress)} style={refundBtnStyle}>💸 İade</button>
                                             ) : (
-                                                // AKTİFSE -> QR VE DETAY
                                                 <>
-                                                    <button onClick={() => generateQR(ticket)} style={qrBtnStyle}>QR KOD</button>
+                                                    <button
+                                                        onClick={() => {
+                                                            if (!isQrDisabled) generateQR(ticket);
+                                                        }}
+                                                        disabled={isQrDisabled}
+                                                        style={{
+                                                            ...qrBtnStyle,
+                                                            backgroundColor: isQrDisabled ? '#e2e8f0' : '#0f172a',
+                                                            color: isQrDisabled ? '#94a3b8' : 'white',
+                                                            cursor: isQrDisabled ? 'not-allowed' : 'pointer',
+                                                            opacity: isQrDisabled ? 0.8 : 1,
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            gap: '6px',
+                                                            fontSize: isMobile ? '11px' : '12px'
+                                                        }}
+                                                    >
+                                                        {isQrDisabled && <LockIcon />}
+                                                        {isMobile ? 'QR' : 'QR KOD'}
+                                                    </button>
+
                                                     <button onClick={() => setSelectedTicket(ticket)} style={detailBtnStyle}>DETAY</button>
                                                 </>
                                             )}
                                         </div>
                                     </div>
-                                    <div style={notchTop}></div>
-                                    <div style={notchBottom}></div>
-                                    <div style={dashedLine}></div>
+
+                                    {/* Responsive Çentikler ve Çizgi */}
+                                    <div style={{ ...notchTop, left: notchLeftPos }}></div>
+                                    <div style={{ ...notchBottom, left: notchLeftPos }}></div>
+                                    <div style={{ ...dashedLine, left: lineLeftPos }}></div>
                                 </div>
                             );
                         })}
@@ -313,7 +354,7 @@ export default function MyTickets() {
             {/* --- QR MODAL --- */}
             {qrDataState && (
                 <div style={modalOverlay}>
-                    <div style={qrModalContent}>
+                    <div style={{ ...qrModalContent, padding: isMobile ? '30px 20px' : '40px' }}>
                         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
                             <h3 style={{ margin: 0, color: 'white', fontSize: '24px', fontWeight: '700' }}>Güvenli Giriş</h3>
                             <p style={{ margin: '5px 0 0', color: 'rgba(255,255,255,0.6)', fontSize: '14px', fontWeight: '500' }}>{qrDataState.eventName}</p>
@@ -321,7 +362,7 @@ export default function MyTickets() {
                         <div style={timerBarStyle}>
                             <div style={{ height: '100%', width: `${(timeLeft / 30) * 100}%`, backgroundColor: timeLeft < 10 ? '#ef4444' : '#10b981', transition: 'width 1s linear', borderRadius: '4px' }}></div>
                         </div>
-                        <div style={qrBoxStyle}>
+                        <div style={{ ...qrBoxStyle, padding: isMobile ? '20px' : '40px' }}>
                             <QRCode value={qrDataState.payload} size={280} style={{ width: '100%', height: 'auto', maxWidth: '100%' }} />
                         </div>
                         {timeLeft === 0 && (
@@ -340,10 +381,10 @@ export default function MyTickets() {
             {selectedTicket && (
                 <div style={modalOverlay} onClick={() => setSelectedTicket(null)}>
                     <div style={detailModalContent} onClick={e => e.stopPropagation()}>
-                        <img src={selectedTicket.image} style={{ width: '100%', height: '220px', objectFit: 'cover' }} />
+                        <img src={selectedTicket.image} style={{ width: '100%', height: isMobile ? '180px' : '220px', objectFit: 'cover' }} />
                         <div style={{ padding: '25px' }}>
-                            <h2 style={{ marginTop: 0, marginBottom: '15px', fontSize: '22px', color: '#1e293b' }}>{selectedTicket.eventName}</h2>
-                            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                            <h2 style={{ marginTop: 0, marginBottom: '15px', fontSize: isMobile ? '20px' : '22px', color: '#1e293b' }}>{selectedTicket.eventName}</h2>
+                            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
                                 <span style={tagStyle}>📅 {formatDateTR(selectedTicket.date)}</span>
                                 <span style={tagStyle}>⏰ {selectedTicket.time}</span>
                             </div>
@@ -368,7 +409,7 @@ export default function MyTickets() {
 // --- STİLLER ---
 // -----------------------------------------------------------------------------
 
-const containerStyle: React.CSSProperties = { maxWidth: '1100px', margin: '0 auto', padding: '0 25px' };
+const containerStyle: React.CSSProperties = { maxWidth: '1100px', margin: '0 auto' };
 const tabsContainerStyle: React.CSSProperties = { display: 'flex', gap: '30px', position: 'relative', marginBottom: '40px' };
 const dividerLineStyle: React.CSSProperties = { position: 'absolute', bottom: '0', left: '0', right: '0', height: '1px', backgroundColor: '#e2e8f0', zIndex: 1 };
 const activeTabStyle: React.CSSProperties = { position: 'relative', paddingBottom: '15px', fontSize: '15px', fontWeight: '700', color: '#0f172a', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 2, userSelect: 'none' };
@@ -377,13 +418,13 @@ const tabBadgeStyle: React.CSSProperties = { backgroundColor: '#f1f5f9', color: 
 const inactiveTabStyle: React.CSSProperties = { paddingBottom: '15px', fontSize: '15px', fontWeight: '500', color: '#94a3b8', cursor: 'pointer', zIndex: 2, userSelect: 'none' };
 const primaryBtnStyle: React.CSSProperties = { backgroundColor: ICON_COLOR, color: 'white', border: 'none', padding: '15px 35px', borderRadius: '30px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 5px 15px rgba(233, 30, 99, 0.3)', transition: '0.2s' };
 const emptyStateStyle: React.CSSProperties = { textAlign: 'center', backgroundColor: 'white', borderRadius: '24px', padding: '80px 20px', boxShadow: '0 20px 50px rgba(0,0,0,0.03)' };
-const gridStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" };
-const ticketCardStyle: React.CSSProperties = { display: 'flex', height: '220px', backgroundColor: 'white', borderRadius: '24px', boxShadow: '0 20px 50px -12px rgba(0,0,0,0.1)', position: 'relative', overflow: 'hidden', transition: '0.3s', cursor: 'default', border: '1px solid #f8fafc' };
-const ticketLeftStyle: React.CSSProperties = { width: '140px', position: 'relative', flexShrink: 0 };
+const gridStyle: React.CSSProperties = { display: "grid", gap: "30px" };
+const ticketCardStyle: React.CSSProperties = { display: 'flex', backgroundColor: 'white', borderRadius: '24px', boxShadow: '0 20px 50px -12px rgba(0,0,0,0.1)', position: 'relative', overflow: 'hidden', transition: '0.3s', cursor: 'default', border: '1px solid #f8fafc' };
+const ticketLeftStyle: React.CSSProperties = { position: 'relative', flexShrink: 0 };
 const overlayGradient: React.CSSProperties = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0) 20%, rgba(0,0,0,0.8) 100%)' };
 const dateOverlay: React.CSSProperties = { position: 'absolute', bottom: '20px', left: '0', right: '0', textAlign: 'center', color: 'white', display: 'flex', flexDirection: 'column', textShadow: '0 2px 4px rgba(0,0,0,0.5)' };
-const ticketRightStyle: React.CSSProperties = { flex: 1, padding: '22px 22px 22px 35px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' };
-const ticketTitle: React.CSSProperties = { margin: '0', fontSize: '17px', fontWeight: '800', color: '#0f172a', lineHeight: '1.3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '180px' };
+const ticketRightStyle: React.CSSProperties = { flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' };
+const ticketTitle: React.CSSProperties = { margin: '0', fontWeight: '800', color: '#0f172a', lineHeight: '1.3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' };
 const ticketInfo: React.CSSProperties = { margin: 0, fontSize: '13px', color: '#64748b', fontWeight: '500' };
 const actionRow: React.CSSProperties = { display: 'flex', gap: '10px', marginTop: '10px' };
 const qrBtnStyle: React.CSSProperties = { flex: 1, backgroundColor: '#0f172a', color: 'white', border: 'none', borderRadius: '12px', padding: '10px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', transition: '0.2s', letterSpacing: '0.5px' };
@@ -392,17 +433,16 @@ const refundBtnStyle: React.CSSProperties = { flex: 1, backgroundColor: '#fee2e2
 const cancelledTag: React.CSSProperties = { backgroundColor: '#ef4444', color: 'white', fontSize: '10px', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold', letterSpacing: '0.5px' };
 const activeTag: React.CSSProperties = { backgroundColor: '#10b981', color: 'white', fontSize: '10px', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold', letterSpacing: '0.5px' };
 const pastTag: React.CSSProperties = { backgroundColor: '#94a3b8', color: 'white', fontSize: '10px', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold', letterSpacing: '0.5px' };
-const usedTag: React.CSSProperties = { backgroundColor: '#f97316', color: 'white', fontSize: '10px', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold', letterSpacing: '0.5px'};
+const usedTag: React.CSSProperties = { backgroundColor: '#f97316', color: 'white', fontSize: '10px', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold', letterSpacing: '0.5px' };
 const priceTag: React.CSSProperties = { fontSize: '12px', fontWeight: '800', color: ICON_COLOR };
-const dashedLine: React.CSSProperties = { position: 'absolute', left: '139px', top: '15px', bottom: '15px', borderLeft: '2px dashed #e2e8f0', zIndex: 2 };
-const notchTop: React.CSSProperties = { position: 'absolute', left: '132px', top: '-12px', width: '16px', height: '24px', backgroundColor: '#fcfdfd', borderRadius: '12px', boxShadow: 'inset 0 -2px 4px rgba(0,0,0,0.05)', zIndex: 3 };
-const notchBottom: React.CSSProperties = { position: 'absolute', left: '132px', bottom: '-12px', width: '16px', height: '24px', backgroundColor: '#f8fafc', borderRadius: '12px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)', zIndex: 3 };
-
+const dashedLine: React.CSSProperties = { position: 'absolute', top: '15px', bottom: '15px', borderLeft: '2px dashed #e2e8f0', zIndex: 2 };
+const notchTop: React.CSSProperties = { position: 'absolute', top: '-12px', width: '16px', height: '24px', backgroundColor: '#fcfdfd', borderRadius: '12px', boxShadow: 'inset 0 -2px 4px rgba(0,0,0,0.05)', zIndex: 3 };
+const notchBottom: React.CSSProperties = { position: 'absolute', bottom: '-12px', width: '16px', height: '24px', backgroundColor: '#f8fafc', borderRadius: '12px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)', zIndex: 3 };
 const modalOverlay: React.CSSProperties = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, backdropFilter: 'blur(10px)' };
-const qrModalContent: React.CSSProperties = { backgroundColor: '#1e1e1e', padding: '40px', borderRadius: '36px', width: '100%', maxWidth: '450px', position: 'relative', boxShadow: '0 25px 80px rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.1)' };
+const qrModalContent: React.CSSProperties = { backgroundColor: '#1e1e1e', borderRadius: '36px', width: '90%', maxWidth: '450px', position: 'relative', boxShadow: '0 25px 80px rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.1)' };
 const closeModalBtn: React.CSSProperties = { marginTop: '25px', width: '100%', padding: '16px', backgroundColor: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', borderRadius: '16px', cursor: 'pointer', fontWeight: 'bold', fontSize: '15px', transition: '0.2s' };
 const timerBarStyle: React.CSSProperties = { width: '100%', height: '6px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '10px', marginBottom: '25px', overflow: 'hidden' };
-const qrBoxStyle: React.CSSProperties = { backgroundColor: 'white', padding: '30px', borderRadius: '28px', position: 'relative', marginBottom: '10px', display: 'flex', justifyContent: 'center', boxShadow: '0 15px 40px rgba(0,0,0,0.3)' };
+const qrBoxStyle: React.CSSProperties = { backgroundColor: '#FFFFFF', borderRadius: '28px', position: 'relative', marginBottom: '10px', display: 'flex', justifyContent: 'center', boxShadow: '0 15px 40px rgba(0,0,0,0.3)', border: '4px solid white' };
 const expiredOverlay: React.CSSProperties = { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: 'rgba(255,255,255,0.95)', padding: '30px', borderRadius: '24px', textAlign: 'center', width: '85%', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' };
 const refreshBtn: React.CSSProperties = { backgroundColor: ICON_COLOR, color: 'white', border: 'none', padding: '12px 30px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', marginTop: '15px', fontSize: '14px' };
 const detailModalContent: React.CSSProperties = { backgroundColor: 'white', borderRadius: '24px', overflow: 'hidden', width: '90%', maxWidth: '400px', position: 'relative', boxShadow: '0 30px 90px rgba(0,0,0,0.3)' };

@@ -1,57 +1,114 @@
-# Sample Hardhat 3 Beta Project (`mocha` and `ethers`)
+# EventBlock 🎟️
 
-This project showcases a Hardhat 3 Beta project using `mocha` for tests and the `ethers` library for Ethereum interactions.
+**Blokzincir Tabanlı Merkeziyetsiz Etkinlik ve Biletleme Platformu**
 
-To learn more about the Hardhat 3 Beta, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3 Beta](https://hardhat.org/hardhat3-beta-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+> *"Bilet, sadece bir kağıt parçası değil; bir deneyime giriş sertifikasıdır."*
 
-## Project Overview
+EventBlock; merkezi biletleme şirketlerinin yüksek komisyon oranlarına, karaborsa satışlarına ve şeffaflık sorunlarına çözüm getiren, Ethereum (Sepolia) ağı üzerinde çalışan yeni nesil bir biletleme platformudur. **TrustCert** standartlarına uygun olarak, her bilet blokzincir üzerinde izlenebilir ve kopyalanamaz bir varlık olarak üretilir.
 
-This example project includes:
+## 🌟 Projenin Amacı
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using `mocha` and ethers.js
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+Geleneksel biletleme sistemlerindeki "aracı" kavramını ortadan kaldırmak.
 
-## Usage
+  * **Organizatörler:** Doğrudan hedef kitlelerine ulaşır, anlık ödeme alır ve bilet sahteciliğinden kurtulur.
+  * **Kullanıcılar:** Satın aldıkları biletin geçerliliğinden %100 emin olur ve fahiş hizmet bedelleri ödemez.
 
-### Running Tests
+## 🚀 Özellikler
 
-To run all the tests in the project, execute the following command:
+### 👤 Kullanıcılar İçin
 
-```shell
-npx hardhat test
+  * **Güvenli Satın Alma:** MetaMask cüzdanı ile saniyeler içinde ETH kullanarak bilet alma.
+  * **QR Kod ile Giriş:** Kriptografik imzalarla (Off-chain imza, On-chain doğrulama) üretilen dinamik QR kodlar.
+  * **Şeffaf İade:** İptal edilen etkinliklerde akıllı kontrat üzerinden güvenli iade garantisi.
+  * **Cüzdanım:** Geçmiş ve aktif biletlerinizi görüntüleyebileceğiniz dijital arşiv.
+  * **Harita Entegrasyonu:** Etkinlik konumlarını harita üzerinde görme.
+
+### 💼 Organizatörler İçin
+
+  * **Etkinlik Paneli:** Toplam hasılat, satılan bilet sayısı ve doluluk oranlarını anlık takip etme.
+  * **Hasılat Çekimi:** Etkinlik tamamlandığında biriken ETH'yi tek tıkla cüzdana çekme.
+  * **QR Tarayıcı (Terminal):** Kapıda bilet kontrolü için dahili QR okuyucu ve doğrulama sistemi.
+  * **Etkinlik Yönetimi:** Görsel, konum, tarih ve kapasite ayarlarıyla etkinlik oluşturma veya iptal etme.
+
+## 🛠️ Teknolojiler
+
+Bu proje modern Web3 ve Frontend teknolojileri kullanılarak geliştirilmiştir:
+
+  * **Blockchain:** Ethereum (Sepolia Testnet), Solidity, Hardhat.
+  * **Frontend:** React (TypeScript), Vite.
+  * **Web3 Entegrasyonu:** Ethers.js v6.
+  * **Harita:** React Leaflet & OpenStreetMap.
+  * **UI/UX:** Responsive CSS Modules, React Toastify (Bildirimler).
+  * **Güvenlik:** EIP-712 standardına benzer kriptografik imza doğrulama mekanizması.
+
+## 📸 Ekran Görüntüleri
+
+| Ana Sayfa | Bilet Detayı |
+|:---:|:---:|
+| *(Buraya ekran görüntüsü ekleyin)* | *(Buraya ekran görüntüsü ekleyin)* |
+
+| Organizatör Paneli | QR Doğrulama |
+|:---:|:---:|
+| *(Buraya ekran görüntüsü ekleyin)* | *(Buraya ekran görüntüsü ekleyin)* |
+
+## ⚙️ Kurulum ve Çalıştırma
+
+Projeyi yerel makinenizde çalıştırmak için aşağıdaki adımları izleyin:
+
+### 1\. Projeyi Klonlayın
+
+```bash
+git clone https://github.com/kullaniciadi/eventblock.git
+cd eventblock
 ```
 
-You can also selectively run the Solidity or `mocha` tests:
+### 2\. Bağımlılıkları Yükleyin
 
-```shell
-npx hardhat test solidity
-npx hardhat test mocha
+```bash
+npm install
+# veya
+yarn install
 ```
 
-### Make a deployment to Sepolia
+### 3\. Ortam Değişkenlerini Ayarlayın
 
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
+`src/config.ts` dosyası içerisindeki kontrat adreslerinin güncel olduğundan emin olun. Eğer kendi kontratlarınızı deploy edecekseniz Hardhat ile deploy ettikten sonra adresleri güncelleyin.
 
-To run the deployment to a local chain:
+### 4\. Uygulamayı Başlatın
 
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
+```bash
+npm start
+# veya
+npm run dev
 ```
 
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
+Tarayıcınızda `http://localhost:3000` (veya `5173`) adresine gidin.
 
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
+## 🏗️ Akıllı Kontrat Mimarisi
 
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
+Sistem **Factory Pattern** kullanılarak tasarlanmıştır:
 
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
-```
+1.  **EventFactory:** Ana fabrika kontratıdır. Yeni etkinliklerin deploy edilmesini ve kayıt altına alınmasını sağlar.
+2.  **EventContract:** Her etkinlik için `Factory` tarafından ayrı ayrı üretilen kontratlardır. Bilet satış mantığı, bakiye yönetimi ve bilet sahipliği verileri burada tutulur.
 
-After setting the variable, you can run the deployment with the Sepolia network:
+## 📱 Mobil Uyumluluk
 
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
-```
+EventBlock, mobil öncelikli (mobile-first) bir yaklaşımla tasarlanmamış olsa da, tüm arayüzler (Biletlerim, Etkinlik Oluşturma, QR Tarayıcı) mobil cihazlarda kusursuz çalışacak şekilde responsive (duyarlı) hale getirilmiştir.
+
+## 🤝 Katkıda Bulunma
+
+1.  Bu projeyi Fork'layın.
+2.  Yeni bir özellik dalı oluşturun (`git checkout -b yeni-ozellik`).
+3.  Değişikliklerinizi Commit edin (`git commit -m 'Yeni özellik eklendi'`).
+4.  Dalınızı Push edin (`git push origin yeni-ozellik`).
+5.  Bir Pull Request oluşturun.
+
+## 📄 Lisans
+
+Bu proje MIT Lisansı ile lisanslanmıştır.
+
+-----
+
+\<p align="center"\>
+\<sub\>EventBlock © 2024 - Blockchain ile Güvenli Eğlence\</sub\>
+\</p\>

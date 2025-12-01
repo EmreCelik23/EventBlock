@@ -15,11 +15,24 @@ interface VerifyModalProps {
     onClose: () => void;
 }
 
+// --- RESPONSIVE HOOK ---
+const useWindowSize = () => {
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 600);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+    return isMobile;
+};
+
 export default function VerifyModal({ isOpen, onClose }: VerifyModalProps) {
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
     const [scanData, setScanData] = useState<{ user: string, event: string } | null>(null);
     const [message, setMessage] = useState("");
     const [isScanning, setIsScanning] = useState(true);
+
+    const isMobile = useWindowSize();
 
     useEffect(() => {
         if (!isOpen) {
@@ -74,7 +87,7 @@ export default function VerifyModal({ isOpen, onClose }: VerifyModalProps) {
             const signer = await provider.getSigner();
             const eventContract = new ethers.Contract(addr, EVENT_ABI, signer);
 
-            // ✅ Önce read-only kontroller
+            // Önce read-only kontroller
             const hasTicket = await eventContract.hasTicket(usr);
             if (!hasTicket) {
                 throw new Error("Bu kullanicinin bileti yok");
@@ -85,14 +98,12 @@ export default function VerifyModal({ isOpen, onClose }: VerifyModalProps) {
                 throw new Error("Bilet zaten kullanilmis");
             }
 
-            // 5. 🔥 useTicket fonksiyonunu çağırıyoruz (tek kullanımlık işaretleme)
             setMessage("Lütfen cüzdandan işlemi onaylayın... 🦊");
             const tx = await eventContract.useTicket(usr);
 
             setMessage("İşlem blokzincire işleniyor... ⏳");
             await tx.wait();
 
-            // 6. Başarılı! Etkinlik adını da alalım
             const eventName = await eventContract.name();
 
             setScanData({ user: usr, event: eventName });
@@ -139,14 +150,22 @@ export default function VerifyModal({ isOpen, onClose }: VerifyModalProps) {
                 @keyframes spin { 100% { transform: rotate(360deg); } }
             `}</style>
 
-            <div style={modalCardStyle} onClick={(e) => e.stopPropagation()}>
+            <div
+                style={{
+                    ...modalCardStyle,
+                    padding: isMobile ? '20px' : '35px',
+                    height: isMobile ? '85vh' : '700px',
+                    borderRadius: isMobile ? '24px' : '36px'
+                }}
+                onClick={(e) => e.stopPropagation()}
+            >
 
-                <button onClick={onClose} style={closeButtonStyle}>
+                <button onClick={onClose} style={{ ...closeButtonStyle, top: isMobile ? '15px' : '25px', right: isMobile ? '15px' : '25px' }}>
                     <CloseIcon />
                 </button>
 
                 {/* HEADER */}
-                <div style={headerContainer}>
+                <div style={{ ...headerContainer, paddingBottom: isMobile ? '15px' : '20px' }}>
                     <div style={headerIconBox}>
                         <ScanFrameIcon />
                     </div>
@@ -161,30 +180,36 @@ export default function VerifyModal({ isOpen, onClose }: VerifyModalProps) {
 
                     {/* SCANNER AREA */}
                     {status === "idle" && (
-                        <div style={scannerWrapper}>
+                        <div style={{ ...scannerWrapper, minHeight: isMobile ? '0' : '400px' }}>
                             <div style={videoContainer}>
                                 <Scanner
                                     onScan={handleScan}
                                     components={{ finder: false }}
                                     styles={{ container: { width: '100%', height: '100%' }, video: { objectFit: 'cover' } }}
                                 />
-                                {/* 🔥 VİZÖR ARTIK TAM KARE (Square) */}
+                                {/* 🔥 RESPONSIVE VİZÖR */}
                                 <div style={darkOverlay}>
-                                    <div style={clearHoleSquare}>
+                                    <div style={{
+                                        ...clearHoleSquare,
+                                        width: isMobile ? '65vw' : '280px',
+                                        height: isMobile ? '65vw' : '280px',
+                                        maxWidth: '280px',
+                                        maxHeight: '280px'
+                                    }}>
                                         <div style={scanLaser}></div>
                                         <div style={cornerTL}></div><div style={cornerTR}></div>
                                         <div style={cornerBL}></div><div style={cornerBR}></div>
                                     </div>
                                 </div>
                             </div>
-                            <div style={activeStatusPill}>
+                            <div style={{ ...activeStatusPill, bottom: isMobile ? '15px' : '25px' }}>
                                 <div style={pulsingDot}></div>
                                 <span>Sistem Hazır</span>
                             </div>
                         </div>
                     )}
 
-                    {/* DİĞER DURUMLAR */}
+                    {/* DİĞER DURUMLAR (Loading / Success / Error) */}
                     {status === "loading" && (
                         <div style={resultStateContainer}>
                             <div className="spinner"></div>
@@ -243,25 +268,24 @@ const overlayStyle: React.CSSProperties = {
     backdropFilter: 'blur(12px)',
     zIndex: 9999,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    padding: '20px 10px'
+    padding: '20px 10px',
+    boxSizing: 'border-box'
 };
 
 const modalCardStyle: React.CSSProperties = {
     width: '100%',
-    maxWidth: '500px', // Genişlik iyi
-    height: '700px',     // Uzun Dikdörtgen Formu
+    maxWidth: '500px',
     maxHeight: '90vh',
     backgroundColor: 'white',
-    borderRadius: '36px',
-    padding: '35px',
     boxShadow: '0 0 0 1px rgba(255,255,255,0.1), 0 40px 80px -20px rgba(0,0,0,0.6)',
     position: 'relative',
     animation: 'popInModal 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-    display: 'flex', flexDirection: 'column', gap: '25px'
+    display: 'flex', flexDirection: 'column', gap: '25px',
+    overflow: 'hidden'
 };
 
 const closeButtonStyle: React.CSSProperties = {
-    position: 'absolute', top: '25px', right: '25px',
+    position: 'absolute',
     background: '#f1f5f9', border: 'none', cursor: 'pointer',
     color: '#64748b', padding: '10px', borderRadius: '50%',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -269,34 +293,34 @@ const closeButtonStyle: React.CSSProperties = {
 };
 
 const headerContainer: React.CSSProperties = {
-    display: 'flex', alignItems: 'center', gap: '15px', paddingBottom: '20px', borderBottom: '1px solid #f1f5f9'
+    display: 'flex', alignItems: 'center', gap: '15px', borderBottom: '1px solid #f1f5f9'
 };
 
 const headerIconBox: React.CSSProperties = {
     width: '52px', height: '52px', borderRadius: '16px',
     background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    boxShadow: '0 8px 16px -4px rgba(79, 70, 229, 0.3)', color: 'white'
+    boxShadow: '0 8px 16px -4px rgba(79, 70, 229, 0.3)', color: 'white',
+    flexShrink: 0
 };
 
 const contentAreaStyle: React.CSSProperties = {
     flex: 1,
     display: 'flex', flexDirection: 'column',
-    position: 'relative'
+    position: 'relative',
+    overflowY: 'auto'
 };
 
-// SCANNER WRAPPER - YÜKSEKLİĞİ ARTTIRILDI
 const scannerWrapper: React.CSSProperties = {
-    flex: 1, // Kalan alanı doldur
+    flex: 1,
     width: '100%',
-    minHeight: '400px', // 🔥 Kamera alanı genişletildi
     borderRadius: '28px', overflow: 'hidden', position: 'relative',
     backgroundColor: '#0f172a',
     boxShadow: 'inset 0 0 40px rgba(0,0,0,0.6)',
     display: 'flex', flexDirection: 'column'
 };
 
-const videoContainer: React.CSSProperties = { width: '100%', height: '100%', position: 'relative' };
+const videoContainer: React.CSSProperties = { width: '100%', height: '100%', position: 'relative', flex: 1 };
 
 const darkOverlay: React.CSSProperties = {
     position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
@@ -305,10 +329,7 @@ const darkOverlay: React.CSSProperties = {
     zIndex: 10
 };
 
-// 🔥 TAM KARE VİZÖR
 const clearHoleSquare: React.CSSProperties = {
-    width: '280px',
-    height: '280px', // 1:1 Oran (Kare) - QR için en iyisi
     position: 'relative',
     boxShadow: '0 0 0 9999px rgba(0,0,0,0.6)',
     borderRadius: '24px'
@@ -328,7 +349,7 @@ const cornerBL: React.CSSProperties = { ...cStyle, bottom: '-2px', left: '-2px',
 const cornerBR: React.CSSProperties = { ...cStyle, bottom: '-2px', right: '-2px', borderLeft: 'none', borderTop: 'none' };
 
 const activeStatusPill: React.CSSProperties = {
-    position: 'absolute', bottom: '25px', left: '50%', transform: 'translateX(-50%)',
+    position: 'absolute', left: '50%', transform: 'translateX(-50%)',
     backgroundColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)',
     padding: '8px 16px', borderRadius: '20px',
     color: 'white', fontSize: '12px', fontWeight: '600',
@@ -339,23 +360,23 @@ const pulsingDot: React.CSSProperties = { width: '8px', height: '8px', backgroun
 
 const resultStateContainer: React.CSSProperties = {
     flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-    textAlign: 'center', padding: '20px'
+    textAlign: 'center', padding: '10px'
 };
 
 const ticketCard: React.CSSProperties = {
     width: '100%', backgroundColor: '#f8fafc', padding: '18px', borderRadius: '18px',
-    border: '1px solid #e2e8f0', marginBottom: '25px'
+    border: '1px solid #e2e8f0', marginBottom: '25px', boxSizing: 'border-box'
 };
 
 const ticketRow: React.CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'center' };
 const ticketLabel: React.CSSProperties = { fontSize: '14px', color: '#64748b', fontWeight: '600' };
-const ticketValue: React.CSSProperties = { fontSize: '15px', color: '#1e293b', fontWeight: '700' };
+const ticketValue: React.CSSProperties = { fontSize: '15px', color: '#1e293b', fontWeight: '700', textAlign: 'right' };
 const ticketValueMono: React.CSSProperties = { ...ticketValue, fontFamily: 'monospace', fontSize: '14px', backgroundColor: '#e2e8f0', padding: '4px 8px', borderRadius: '6px' };
 const divider: React.CSSProperties = { height: '1px', backgroundColor: '#e2e8f0', margin: '12px 0' };
 
 const errorBox: React.CSSProperties = {
     backgroundColor: '#fef2f2', padding: '15px', borderRadius: '14px',
-    border: '1px solid #fee2e2', marginBottom: '20px', width: '100%'
+    border: '1px solid #fee2e2', marginBottom: '20px', width: '100%', boxSizing: 'border-box'
 };
 
 const successBtn: React.CSSProperties = {

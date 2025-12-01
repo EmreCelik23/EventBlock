@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-// Aynı klasördeki EventContract dosyasını içeri aktarıyoruz
 import "./EventContract.sol";
 
 contract EventFactory {
@@ -21,9 +20,8 @@ contract EventFactory {
         uint256 eventTimestamp 
     ) public {
         
-        // Yeni kontratı oluştururken bu zaman bilgisini de gönderiyoruz
         EventContract newEvent = new EventContract(
-            msg.sender,     // organizer
+            msg.sender,
             name,
             date,
             time,

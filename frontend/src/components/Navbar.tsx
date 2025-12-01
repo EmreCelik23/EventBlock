@@ -4,12 +4,20 @@ import { ethers } from 'ethers';
 import { shortenAddress } from '../utils';
 import { CHAIN_ID, CHAIN_HEX_ID, CHAIN_NAME, SEPOLIA_RPC_URL, BLOCK_EXPLORER_URL } from '../config';
 
-// --- SENİN ORİJİNAL RENKLERİN ---
 const PRIMARY_COLOR = '#a29bfe'; 
 const SECONDARY_COLOR = '#6c5ce7'; 
 const ACCENT_RED = '#ff6b6b';
 
-// --- İKONLAR ---
+const useIsMobile = () => {
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+    return isMobile;
+};
+
 const ScanIcon = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" style={{marginRight:'6px'}}><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>;
 
 interface NavbarProps {
@@ -22,6 +30,7 @@ const Navbar: React.FC<NavbarProps> = ({ onVerifyClick }) => {
   const [scrolled, setScrolled] = useState(false);
   const [isHoveringConnect, setIsHoveringConnect] = useState(false);
   const location = useLocation();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -88,7 +97,6 @@ const Navbar: React.FC<NavbarProps> = ({ onVerifyClick }) => {
   }
 };
 
-  // Link stil fonksiyonu
   const getLinkStyle = (path: string): React.CSSProperties => {
     const isActive = location.pathname === path;
     return { 
@@ -96,89 +104,115 @@ const Navbar: React.FC<NavbarProps> = ({ onVerifyClick }) => {
         color: isActive ? 'white' : '#888',
         borderBottom: isActive ? `2px solid ${PRIMARY_COLOR}` : '2px solid transparent',
         textShadow: isActive ? `0 0 10px ${PRIMARY_COLOR}33` : 'none',
-        paddingBottom: '4px'
+        paddingBottom: '4px',
+        whiteSpace: 'nowrap'
     };
   };
 
-  // 🔥 GÜNCELLENMİŞ GRADİENT AYARI
-  // Solda tam siyah (#000000) başlayıp, sağa doğru eski hafif şeffaf yapıya geçiyor.
   const dynamicNavStyle: React.CSSProperties = {
     ...navStyle,
     background: scrolled 
-        ? 'rgba(0, 0, 0, 0.95)' // Scroll edildiğinde neredeyse tam siyah
-        : 'linear-gradient(to right, #000000 0%, rgba(5, 5, 5, 0.9) 30%, rgba(10, 10, 10, 0.7) 100%)', // Sayfa başındayken soldan sağa açılan gradient
+        ? 'rgba(0, 0, 0, 0.95)'
+        : 'linear-gradient(to right, #000000 0%, rgba(5, 5, 5, 0.9) 30%, rgba(10, 10, 10, 0.7) 100%)', 
     backdropFilter: scrolled ? 'blur(20px)' : 'blur(12px)',
     borderBottom: scrolled ? '1px solid rgba(255,255,255,0.05)' : '1px solid transparent',
+    padding: isMobile ? '15px 0' : '0'
   };
 
   return (
     <nav style={dynamicNavStyle}>
-      <div style={containerStyle}>
+      <div style={{
+          ...containerStyle, 
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: isMobile ? '15px' : '0'
+      }}>
         
-        {/* 1. LOGO */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-            <h2 style={brandStyle}>Event<span style={{color:PRIMARY_COLOR}}>Block</span></h2>
-          </Link>
+        <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            width: isMobile ? '100%' : 'auto' 
+        }}>
+            <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+                <h2 style={{...brandStyle, fontSize: isMobile ? '22px' : '26px'}}>Event<span style={{color:PRIMARY_COLOR}}>Block</span></h2>
+            </Link>
+
+            {isMobile && (
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={onVerifyClick} style={{...verifyBtnStyle, padding:'6px 12px', fontSize:'11px'}}>
+                        <ScanIcon />
+                    </button>
+                    {isWrongNetwork ? (
+                        <button onClick={switchNetwork} style={{...wrongNetworkBtnStyle, padding:'6px 12px', fontSize:'11px'}}>⚠️</button>
+                    ) : (
+                        <button onClick={connectWallet} style={walletAddress ? {...connectedBtnStyle, padding:'6px 12px', fontSize:'12px'} : {...connectBtnStyle, padding:'6px 12px', fontSize:'12px'}}>
+                            {walletAddress ? shortenAddress(walletAddress) : "Bağlan"}
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
         
-        {/* 2. ORTA MENÜ */}
-        <div style={menuStyle}>
+        <div style={{
+            ...menuStyle,
+            width: isMobile ? '100%' : 'auto',
+            overflowX: isMobile ? 'auto' : 'visible',
+            justifyContent: isMobile ? 'flex-start' : 'center',
+            padding: isMobile ? '10px 0' : '10px 30px',
+            backgroundColor: isMobile ? 'transparent' : 'rgba(255,255,255,0.03)',
+            border: isMobile ? 'none' : '1px solid transparent',
+            boxShadow: isMobile ? 'none' : `0 0 1px ${PRIMARY_COLOR}88, inset 0 0 1px ${PRIMARY_COLOR}88`,
+            gap: isMobile ? '20px' : '35px'
+        }}>
           <Link to="/" style={getLinkStyle('/')}>Ana Sayfa</Link>
           <Link to="/create" style={getLinkStyle('/create')}>Etkinlik Oluştur</Link>
           <Link to="/my-tickets" style={getLinkStyle('/my-tickets')}>Biletlerim</Link>
           <Link to="/dashboard" style={getLinkStyle('/dashboard')}>Panelim</Link>
         </div>
 
-        {/* 3. SAĞ TARAF (Kontrol & Cüzdan) */}
-        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            
-            {/* Kontrol Butonu */}
-            <button onClick={onVerifyClick} style={verifyBtnStyle}>
-                <ScanIcon /> Kontrol
-            </button>
+        {!isMobile && (
+            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                <button onClick={onVerifyClick} style={verifyBtnStyle}>
+                    <ScanIcon /> Kontrol
+                </button>
 
-            {/* Cüzdan Butonu */}
-            {isWrongNetwork ? (
-            <button onClick={switchNetwork} style={wrongNetworkBtnStyle}>
-                <span style={{marginRight:'5px'}}>⚠️</span> Yanlış Ağ
-            </button>
-            ) : (
-            <button 
-                onClick={connectWallet}
-                onMouseEnter={() => setIsHoveringConnect(true)}
-                onMouseLeave={() => setIsHoveringConnect(false)}
-                style={walletAddress 
-                    ? connectedBtnStyle 
-                    : { 
-                        ...connectBtnStyle, 
-                        transform: isHoveringConnect ? 'translateY(-2px)' : 'translateY(0)',
-                        boxShadow: isHoveringConnect ? '0 8px 25px rgba(108, 92, 231, 0.6)' : '0 6px 20px rgba(108, 92, 231, 0.4)'
-                      }}
-            >
-                {walletAddress ? (
-                    <>
-                        <div style={onlineDot}></div>
-                        {shortenAddress(walletAddress)}
-                    </>
+                {isWrongNetwork ? (
+                <button onClick={switchNetwork} style={wrongNetworkBtnStyle}>
+                    <span style={{marginRight:'5px'}}>⚠️</span> Yanlış Ağ
+                </button>
                 ) : (
-                    <>Cüzdan Bağla <span style={{marginLeft:'5px'}}>🦊</span></>
+                <button 
+                    onClick={connectWallet}
+                    onMouseEnter={() => setIsHoveringConnect(true)}
+                    onMouseLeave={() => setIsHoveringConnect(false)}
+                    style={walletAddress 
+                        ? connectedBtnStyle 
+                        : { 
+                            ...connectBtnStyle, 
+                            transform: isHoveringConnect ? 'translateY(-2px)' : 'translateY(0)',
+                            boxShadow: isHoveringConnect ? '0 8px 25px rgba(108, 92, 231, 0.6)' : '0 6px 20px rgba(108, 92, 231, 0.4)'
+                          }}
+                >
+                    {walletAddress ? (
+                        <>
+                            <div style={onlineDot}></div>
+                            {shortenAddress(walletAddress)}
+                        </>
+                    ) : (
+                        <>Cüzdan Bağla <span style={{marginLeft:'5px'}}>🦊</span></>
+                    )}
+                </button>
                 )}
-            </button>
-            )}
-        </div>
+            </div>
+        )}
       </div>
     </nav>
   );
 };
 
-// -----------------------------------------------------------------------------------------
-// --- STYLES ---
-// -----------------------------------------------------------------------------------------
-
 const navStyle: React.CSSProperties = {
   position: 'sticky', top: 0, zIndex: 1000,
-  width: '100%', transition: 'all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)', // Geçiş süresini biraz artırdım daha yumuşak olsun
+  width: '100%', transition: 'all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)',
   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
 };
 
@@ -199,7 +233,8 @@ const menuStyle: React.CSSProperties = {
     borderRadius: '50px',
     boxShadow: `0 0 1px ${PRIMARY_COLOR}88, inset 0 0 1px ${PRIMARY_COLOR}88`,
     border: '1px solid transparent', 
-    transition: 'all 0.3s'
+    transition: 'all 0.3s',
+    scrollbarWidth: 'none'
 };
 
 const linkStyle: React.CSSProperties = {
@@ -207,7 +242,6 @@ const linkStyle: React.CSSProperties = {
     letterSpacing: '0.2px', transition: 'color 0.3s, border-bottom 0.3s'
 };
 
-// Kontrol Butonu
 const verifyBtnStyle: React.CSSProperties = {
     background: 'rgba(255, 107, 107, 0.1)', 
     border: `1px solid ${ACCENT_RED}44`,
@@ -219,7 +253,6 @@ const verifyBtnStyle: React.CSSProperties = {
     transition: 'all 0.2s',
 };
 
-// Cüzdan Butonları
 const connectBtnStyle: React.CSSProperties = {
     padding: '10px 24px', border: 'none', borderRadius: '25px',
     background: `linear-gradient(105deg, ${SECONDARY_COLOR} 0%, ${PRIMARY_COLOR} 100%)`,

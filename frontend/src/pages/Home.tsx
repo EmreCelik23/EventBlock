@@ -4,19 +4,27 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FACTORY_ADDRESS, FACTORY_ABI, EVENT_ABI } from '../config';
 
-// --- SABİT DEĞERLER ---
 const ICON_COLOR = '#e91e63';
 const HERO_IMAGES = [
     '/images/hero1.jpg', '/images/hero2.jpg', '/images/hero3.jpg',
     '/images/hero4.jpg', '/images/hero5.jpg', '/images/hero6.jpg'
 ];
 
-// --- İKONLAR ---
+const useIsMobile = () => {
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+    return isMobile;
+};
+
 const SearchIcon = () => <svg width="20" height="20" fill="none" stroke={ICON_COLOR} strokeWidth="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>;
 const MapPinIcon = () => <svg width="20" height="20" fill="none" stroke={ICON_COLOR} strokeWidth="2.5" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>;
 const CalendarIcon = () => <svg width="20" height="20" fill="none" stroke={ICON_COLOR} strokeWidth="2.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>;
 const FilterIcon = () => <svg width="16" height="16" fill="none" stroke="#666" strokeWidth="2" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" /></svg>;
-const SettingsIcon = () => <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>;
+const SettingsIcon = () => <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>;
 const PlusIcon = () => <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>;
 
 interface EventData {
@@ -45,8 +53,8 @@ export default function Home() {
     const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
     const [randomHeroImage, setRandomHeroImage] = useState('');
     const navigate = useNavigate();
+    const isMobile = useIsMobile();
 
-    // --- FİLTRE STATE'LERİ ---
     const [searchTerm, setSearchTerm] = useState("");
     const [filterLocation, setFilterLocation] = useState("");
     const [minPrice, setMinPrice] = useState("");
@@ -55,7 +63,6 @@ export default function Home() {
     const [sortBy, setSortBy] = useState("date_asc");
     const [hideSoldOut, setHideSoldOut] = useState(false);
 
-    // YARDIMCI FONKSİYONLAR
     const formatDateTR = (dateStr: string) => {
         if (!dateStr) return "";
         const [year, month, day] = dateStr.split('-');
@@ -70,14 +77,16 @@ export default function Home() {
 
     const getCleanMapLink = (url: string) => {
         if (!url) return '';
+        const trimmed = url.trim();
         const coordRegex = /^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/;
-        if (coordRegex.test(url.trim())) return `http://googleusercontent.com/maps.google.com/?q=${url.trim().replace(/\s/g, '')}`;
-        if (url.includes('googleusercontent') || url.includes('http://googleusercontent.com/maps.google.com/')) {
-            const match = url.match(/(maps\.google\.com.*|goo\.gl.*)/);
+        if (coordRegex.test(trimmed)) return `http://googleusercontent.com/maps.google.com/?q=${trimmed.replace(/\s/g, '')}`;
+        if (trimmed.includes('googleusercontent') || trimmed.includes('http://googleusercontent.com/maps.google.com/')) {
+            const match = trimmed.match(/(maps\.google\.com.*|goo\.gl.*)/);
             if (match) return `https://${match[0]}`;
         }
-        if (!url.startsWith('http')) return `https://${url}`;
-        return url;
+        if (trimmed.startsWith('http')) return trimmed;
+        
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trimmed)}`;
     };
 
     const isFilterActive = searchTerm || filterLocation || minPrice || maxPrice || filterDate || hideSoldOut;
@@ -85,7 +94,7 @@ export default function Home() {
     const clearFilters = () => {
         setSearchTerm(""); setFilterLocation(""); setMinPrice(""); setMaxPrice("");
         setFilterDate(""); setSortBy("date_asc"); setHideSoldOut(false);
-        toast.info("Filtreler temizlendi");
+        toast.info("Filtreler temizlendi", { theme: "dark" });
     };
 
     useEffect(() => {
@@ -123,15 +132,15 @@ export default function Home() {
                 deployedEvents.map(async (address: string) => {
                     try {
                         const eventContract = new ethers.Contract(address, EVENT_ABI, provider);
-                        
+
                         const [name, date, time, image, price, capacity, soldCount, organizer, isCancelled, eventTimestamp] = await Promise.all([
-                            eventContract.name(), 
-                            eventContract.date(), 
-                            eventContract.time(), 
+                            eventContract.name(),
+                            eventContract.date(),
+                            eventContract.time(),
                             eventContract.imageURL(),
-                            eventContract.price(), 
-                            eventContract.capacity(), 
-                            eventContract.soldCount(), 
+                            eventContract.price(),
+                            eventContract.capacity(),
+                            eventContract.soldCount(),
                             eventContract.organizer(),
                             eventContract.isCancelled(),
                             eventContract.eventTimestamp()
@@ -166,36 +175,82 @@ export default function Home() {
     };
 
     const buyTicket = async (eventAddress: string, priceETH: string) => {
-        if (!currentAccount) return toast.warning("Lütfen cüzdan bağlayın!");
+        if (!currentAccount) return toast.warning("Lütfen cüzdan bağlayın!", { theme: "dark" });
         try {
             const provider = new ethers.BrowserProvider((window as any).ethereum);
             const signer = await provider.getSigner();
             const eventContract = new ethers.Contract(eventAddress, EVENT_ABI, signer);
-            
+
             const hasTicket = await eventContract.hasTicket(currentAccount);
-            if (hasTicket) return toast.warning("⚠️ Bu etkinlik için zaten biletiniz var!");
-            
+            if (hasTicket) return toast.warning("⚠️ Bu etkinlik için zaten biletiniz var!", { theme: "dark" });
+
             const tx = await eventContract.buyTicket({ value: ethers.parseEther(priceETH) });
-            toast.info("İşlem gönderildi... ⏳");
-            await tx.wait();
-            toast.success("🎉 Bilet alındı!");
-            window.location.reload();
+            toast.info("İşlem ağa gönderildi... ⏳", { theme: "dark", autoClose: 3000 });
+
+            const receipt = await tx.wait();
+
+            toast.success(
+                <div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '5px', fontSize: '15px' }}>🎉 Bilet Cüzdanında!</div>
+                    <div style={{ fontSize: '12px', opacity: 0.9, color: '#e0e0e0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                            <span>📦</span> <span style={{ fontWeight: 600 }}>Blok No:</span>
+                            <span style={{ fontFamily: 'monospace', color: '#818cf8' }}>{receipt.blockNumber}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span>🔗</span> <span style={{ fontWeight: 600 }}>Tx Hash:</span>
+                            <span style={{ fontFamily: 'monospace', color: '#818cf8' }}>
+                                {tx.hash.substring(0, 10)}...{tx.hash.substring(62)}
+                            </span>
+                        </div>
+                    </div>
+                </div>,
+                { theme: "dark", autoClose: 6000 }
+            );
+
+            setEvents(prevEvents => prevEvents.map(evt => {
+                if (evt.address === eventAddress) {
+                    return { 
+                        ...evt, 
+                        hasBought: true, 
+                        soldCount: (Number(evt.soldCount) + 1).toString() 
+                    };
+                }
+                return evt;
+            }));
+            
+            setSelectedEvent(prev => prev ? { ...prev, hasBought: true, soldCount: (Number(prev.soldCount) + 1).toString() } : null);
+
         } catch (error: any) {
-            if (error.reason && error.reason.includes("Satislar kapandi")) {
-                 toast.error("⛔️ Üzgünüz, satışlar kapandı! Süre doldu.");
-            } else if (error.code === "CALL_EXCEPTION") {
-                 toast.error("İşlem başarısız: Biletiniz var, dolu veya süre bitti.");
+            console.error("Hata Detayı:", error);
+
+            if (error.code === 4001 || error.message?.includes("user rejected") || error.reason?.includes("rejected")) {
+                toast.warning("İşlemi iptal ettiniz.", { theme: "dark" });
+                return;
+            }
+
+            if (error.code === "INSUFFICIENT_FUNDS" || error.message?.includes("insufficient funds") || error.info?.error?.message?.includes("insufficient funds")) {
+                toast.error("⛔️ Yetersiz Bakiye! Cüzdanınızda bilet ücreti ve işlem masrafı (Gas) için yeterli ETH yok.", { theme: "dark" });
+                return;
+            }
+
+            if (error.reason) {
+                if (error.reason.includes("Satislar kapandi")) {
+                    toast.error("⏳ Üzgünüz, bu etkinlik için satış süresi doldu.", { theme: "dark" });
+                } else if (error.reason.includes("Dolu")) {
+                    toast.error("❌ Üzgünüz, biletler tükendi.", { theme: "dark" });
+                } else if (error.reason.includes("Zaten biletin var")) {
+                    toast.warning("🎟️ Zaten biletiniz mevcut.", { theme: "dark" });
+                } else {
+                    toast.error("İşlem başarısız: " + error.reason, { theme: "dark" });
+                }
             } else {
-                 toast.error("Hata: " + (error.reason || error.message));
+                toast.error("Bir hata oluştu. Lütfen bakiyenizi kontrol edip tekrar deneyin.", { theme: "dark" });
             }
         }
     };
 
     const filteredEvents = useMemo(() => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        // 🔥 KRİTİK GÜNCELLEME: Şu anki zamanı alıyoruz
         const now = Math.floor(Date.now() / 1000);
 
         return events.filter((evt) => {
@@ -213,10 +268,7 @@ export default function Home() {
             }
             const isSoldOut = Number(evt.soldCount) >= Number(evt.capacity);
             const matchSoldOut = hideSoldOut ? !isSoldOut : true;
-            
-            // 🔥 YENİ KURAL: 
-            // 1. İptal edilmemiş olacak
-            // 2. Etkinlik zamanı GELECEKTE olacak (Süresi dolmuşları gizle)
+
             const isActiveAndFuture = !evt.isCancelled && (evt.eventTimestamp > now);
 
             return matchSearch && matchLocation && matchPrice && matchDate && matchSoldOut && isActiveAndFuture;
@@ -261,30 +313,30 @@ export default function Home() {
                                 <div><p style={{ margin: 0, fontSize: '12px', color: '#888', fontWeight: 'bold' }}>FİYAT</p><p style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: ICON_COLOR }}>{selectedEvent.price} ETH</p></div>
                                 <div><p style={{ margin: 0, fontSize: '12px', color: '#888', fontWeight: 'bold' }}>KONTENJAN</p><p style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#333' }}>{selectedEvent.soldCount} / {selectedEvent.capacity}</p></div>
                             </div>
-                            
+
                             {currentAccount.toLowerCase() === selectedEvent.organizer.toLowerCase() ? (
                                 <button onClick={() => navigate('/dashboard')} style={{ ...buyModalBtnStyle, width: '100%', backgroundColor: '#1e293b', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}><SettingsIcon /> Etkinliği Yönet</button>
                             ) : (
-                                <button 
-                                    onClick={() => buyTicket(selectedEvent.address, selectedEvent.price)} 
-                                    style={{ 
-                                        ...buyModalBtnStyle, 
+                                <button
+                                    onClick={() => buyTicket(selectedEvent.address, selectedEvent.price)}
+                                    style={{
+                                        ...buyModalBtnStyle,
                                         width: '100%',
                                         backgroundColor: isEventExpired(selectedEvent.eventTimestamp) ? '#94a3b8' : ICON_COLOR,
                                         cursor: isEventExpired(selectedEvent.eventTimestamp) ? 'not-allowed' : 'pointer'
-                                    }} 
+                                    }}
                                     disabled={
-                                        Number(selectedEvent.soldCount) >= Number(selectedEvent.capacity) || 
-                                        selectedEvent.hasBought || 
+                                        Number(selectedEvent.soldCount) >= Number(selectedEvent.capacity) ||
+                                        selectedEvent.hasBought ||
                                         isEventExpired(selectedEvent.eventTimestamp)
                                     }
                                 >
-                                    {selectedEvent.hasBought 
-                                        ? "✅ Biletiniz Var" 
-                                        : isEventExpired(selectedEvent.eventTimestamp) 
-                                            ? "⛔️ SATIŞ KAPANDI" 
-                                            : (Number(selectedEvent.soldCount) >= Number(selectedEvent.capacity) 
-                                                ? "TÜKENDİ" 
+                                    {selectedEvent.hasBought
+                                        ? "✅ Biletiniz Var"
+                                        : isEventExpired(selectedEvent.eventTimestamp)
+                                            ? "⛔️ SATIŞ KAPANDI"
+                                            : (Number(selectedEvent.soldCount) >= Number(selectedEvent.capacity)
+                                                ? "TÜKENDİ"
                                                 : `Hemen Al (${selectedEvent.price} ETH)`
                                             )
                                     }
@@ -298,19 +350,29 @@ export default function Home() {
             <div style={dynamicHeroStyle}>
                 <div style={heroOverlayStyle}></div>
                 <div style={heroContentStyle}>
-                    <h1 style={{ fontSize: '4.5rem', fontWeight: '900', margin: 0, letterSpacing: '-3px', textShadow: '0 0 20px rgba(0,0,0,0.5)' }}>Anı Yaşa. EventBlock.</h1>
-                    <p style={{ fontSize: '1.3rem', opacity: 0.9, marginTop: '10px', fontWeight: '300' }}>Blokzincir güvencesiyle en iyi etkinlikleri keşfet.</p>
+                    <h1 style={{
+                        fontSize: isMobile ? '2.5rem' : '4.5rem',
+                        fontWeight: '900', margin: 0, letterSpacing: '-3px', textShadow: '0 0 20px rgba(0,0,0,0.5)'
+                    }}>Anı Yaşa. EventBlock.</h1>
+                    <p style={{ fontSize: isMobile ? '1rem' : '1.3rem', opacity: 0.9, marginTop: '10px', fontWeight: '300' }}>Blokzincir güvencesiyle en iyi etkinlikleri keşfet.</p>
                 </div>
-                <div style={searchBarStyle}>
+                <div style={{
+                    ...searchBarStyle,
+                    flexDirection: isMobile ? 'column' : 'row',
+                    padding: isMobile ? '20px' : '15px 30px',
+                    borderRadius: isMobile ? '30px' : '100px',
+                    gap: isMobile ? '15px' : '25px',
+                    bottom: isMobile ? '-100px' : '-40px'
+                }}>
                     <div style={searchGroupStyle}><label style={labelStyle}>ETKİNLİK</label><div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><SearchIcon /><input type="text" placeholder="Konser, Tiyatro..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={inputStyle} /></div></div>
-                    <div style={dividerStyle}></div>
+                    <div style={{ ...dividerStyle, display: isMobile ? 'none' : 'block' }}></div>
                     <div style={searchGroupStyle}><label style={labelStyle}>NEREDE</label><div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><MapPinIcon /><input type="text" placeholder="Şehir Ara..." value={filterLocation} onChange={(e) => setFilterLocation(e.target.value)} style={inputStyle} /></div></div>
-                    <div style={dividerStyle}></div>
+                    <div style={{ ...dividerStyle, display: isMobile ? 'none' : 'block' }}></div>
                     <div style={searchGroupStyle}><label style={labelStyle}>TARİH</label><div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><CalendarIcon /><input type="date" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} style={inputStyle} /></div></div>
                 </div>
             </div>
 
-            <div style={subFilterContainerStyle}>
+            <div style={{ ...subFilterContainerStyle, marginTop: isMobile ? '130px' : '70px' }}>
                 <div style={filterPill}><FilterIcon /></div>
                 <div style={filterPill}><span>Fiyat:</span><input type="number" placeholder="Min" value={minPrice} onChange={e => setMinPrice(clampPriceString(e.target.value))} style={tinyInput} />-<input type="number" placeholder="Max" value={maxPrice} onChange={e => setMaxPrice(clampPriceString(e.target.value))} style={tinyInput} /></div>
                 <label style={{ ...filterPill, cursor: 'pointer' }}><input type="checkbox" checked={hideSoldOut} onChange={(e) => setHideSoldOut(e.target.checked)} style={checkBoxStyle} /><span style={{ marginLeft: '5px' }}>Tükenenleri Gizle</span></label>
@@ -319,9 +381,8 @@ export default function Home() {
             </div>
 
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-                
-                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px'}}>
-                    <p style={{ color: '#666', fontSize: '14px', margin:0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>
                         Toplam <strong>{filteredEvents.length}</strong> etkinlik listeleniyor.
                     </p>
                     <button onClick={() => navigate('/create')} style={createBtnStyle}>
@@ -329,76 +390,81 @@ export default function Home() {
                     </button>
                 </div>
 
-                {events.length === 0 ? (
-                    <div style={emptyStateStyle}>
-                        <div style={{ fontSize: '60px', marginBottom: '15px' }}>🌱</div>
-                        <h2 style={{ margin: '10px 0', color: '#333' }}>Sistemde henüz hiç etkinlik yok.</h2>
-                        <p style={{ color: '#666', fontSize: '16px' }}>Buralar çok sessiz... İlk etkinliği sen oluşturarak bu sessizliği boz!</p>
-                        <button onClick={() => navigate('/create')} style={actionLinkStyle}>✨ İlk Etkinliği Oluştur</button>
-                    </div>
-                ) : filteredEvents.length === 0 ? (
-                    isFilterActive ? (
-                        <div style={emptyStateStyle}>
-                            <div style={{ fontSize: '60px', marginBottom: '15px' }}>🔍</div>
-                            <h2 style={{ margin: '10px 0', color: '#333' }}>Aradığınız kriterlere uygun sonuç bulunamadı.</h2>
-                            <p style={{ color: '#666', fontSize: '16px' }}>Fiyat aralığını genişletmeyi veya farklı bir şehir aramayı deneyin.</p>
-                            <button onClick={clearFilters} style={resetLinkStyle}>Filtreleri Sıfırla</button>
-                        </div>
-                    ) : (
-                        <div style={emptyStateStyle}>
-                            <div style={{ fontSize: '60px', marginBottom: '15px' }}>📆</div>
-                            <h2 style={{ margin: '10px 0', color: '#333' }}>Şu an aktif etkinlik bulunmuyor.</h2>
-                            <p style={{ color: '#666', fontSize: '16px' }}>Mevcut etkinliklerin süresi dolmuş veya iptal edilmiş olabilir.</p>
-                            <button onClick={() => navigate('/create')} style={actionLinkStyle}>✨ Yeni Bir Etkinlik Oluştur</button>
-                        </div>
-                    )
-                ) : (
-                    <div style={gridStyle}>
-                        {filteredEvents.map((evt, index) => {
-                            const isOwner = currentAccount.toLowerCase() === evt.organizer.toLowerCase();
-                            const isSoldOut = Number(evt.soldCount) >= Number(evt.capacity);
-                            const isExpired = isEventExpired(evt.eventTimestamp);
+                {(() => {
+                    if (events.length === 0) {
+                        return (
+                            <div style={emptyStateStyle}>
+                                <div style={{ fontSize: '60px', marginBottom: '15px' }}>🌱</div>
+                                <h2 style={{ margin: '10px 0', color: '#333' }}>Sistemde henüz hiç etkinlik yok.</h2>
+                                <p style={{ color: '#666', fontSize: '16px' }}>Buralar çok sessiz... İlk etkinliği sen oluşturarak bu sessizliği boz!</p>
+                                <button onClick={() => navigate('/create')} style={actionLinkStyle}>✨ İlk Etkinliği Oluştur</button>
+                            </div>
+                        );
+                    }
 
+                    if (filteredEvents.length === 0) {
+                        if (isFilterActive) {
                             return (
-                                <div key={index} style={cardStyle} onClick={() => setSelectedEvent(evt)}>
-                                    <div style={cardImageWrapper}>
-                                        <img src={evt.image} style={cardImage} onError={(e) => { (e.target as any).src = "https://via.placeholder.com/400x200?text=Resim+Yok" }} />
-                                        <div style={dateBadge}>
-                                            <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{evt.date.split('-')[2]}</span>
-                                            <span style={{ fontSize: '10px', textTransform: 'uppercase', color: '#555' }}>{new Date(evt.date).toLocaleString('tr-TR', { month: 'short' })}</span>
-                                        </div>
-                                        {isOwner && <span style={ownerTag}>👑 SENİN</span>}
-                                        {/* Artık ana listede süresi dolmuş etkinlikler çıkmayacak ama güvenlik için tag kalsın */}
-                                        {isExpired && !isOwner && <span style={{...soldOutTag, backgroundColor:'rgba(51, 65, 85, 0.9)'}}>SÜRE DOLDU</span>}
-                                        {isSoldOut && !isOwner && !isExpired && <span style={soldOutTag}>TÜKENDİ</span>}
-                                        {evt.hasBought && !isOwner && <span style={boughtTag}>✅ BİLETİN VAR</span>}
-                                    </div>
-                                    <div style={{ padding: '20px' }}>
-                                        <h3 style={cardTitle}>{evt.name}</h3>
-                                        <p style={cardLocation}>📍 {evt.locationStr.length > 40 ? evt.locationStr.substring(0, 40) + '...' : evt.locationStr}</p>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', marginTop: '15px' }}>
-                                            <div><p style={{ margin: 0, fontSize: '11px', color: '#999', fontWeight: '700' }}>BAŞLAYAN FİYATLAR</p><p style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: ICON_COLOR }}>{evt.price} ETH</p></div>
-                                            <button style={detailBtn}>İncele</button>
-                                        </div>
-                                    </div>
+                                <div style={emptyStateStyle}>
+                                    <div style={{ fontSize: '60px', marginBottom: '15px' }}>🔍</div>
+                                    <h2 style={{ margin: '10px 0', color: '#333' }}>Aradığınız kriterlere uygun sonuç bulunamadı.</h2>
+                                    <p style={{ color: '#666', fontSize: '16px' }}>Fiyat aralığını genişletmeyi veya farklı bir şehir aramayı deneyin.</p>
+                                    <button onClick={clearFilters} style={resetLinkStyle}>Filtreleri Sıfırla</button>
                                 </div>
                             );
-                        })}
-                    </div>
-                )}
+                        }
+                    }
+
+                    return (
+                        <div style={{
+                            ...gridStyle,
+                            gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(280px, 1fr))"
+                        }}>
+                            {filteredEvents.map((evt, index) => {
+                                const isOwner = currentAccount.toLowerCase() === evt.organizer.toLowerCase();
+                                const isSoldOut = Number(evt.soldCount) >= Number(evt.capacity);
+                                const isExpired = isEventExpired(evt.eventTimestamp);
+
+                                return (
+                                    <div key={index} style={cardStyle} onClick={() => setSelectedEvent(evt)}>
+                                        <div style={cardImageWrapper}>
+                                            <img src={evt.image} style={cardImage} onError={(e) => { (e.target as any).src = "https://via.placeholder.com/400x200?text=Resim+Yok" }} />
+                                            <div style={dateBadge}>
+                                                <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{evt.date.split('-')[2]}</span>
+                                                <span style={{ fontSize: '10px', textTransform: 'uppercase', color: '#555' }}>{new Date(evt.date).toLocaleString('tr-TR', { month: 'short' })}</span>
+                                            </div>
+                                            {isOwner && <span style={ownerTag}>👑 SENİN</span>}
+                                            {isExpired && !isOwner && <span style={{ ...soldOutTag, backgroundColor: 'rgba(51, 65, 85, 0.9)' }}>SÜRE DOLDU</span>}
+                                            {isSoldOut && !isOwner && !isExpired && <span style={soldOutTag}>TÜKENDİ</span>}
+                                            {evt.hasBought && !isOwner && <span style={boughtTag}>✅ BİLETİN VAR</span>}
+                                        </div>
+                                        <div style={{ padding: '20px' }}>
+                                            <h3 style={cardTitle}>{evt.name}</h3>
+                                            <p style={cardLocation}>📍 {evt.locationStr.length > 40 ? evt.locationStr.substring(0, 40) + '...' : evt.locationStr}</p>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', marginTop: '15px' }}>
+                                                <div><p style={{ margin: 0, fontSize: '11px', color: '#999', fontWeight: '700' }}>BAŞLAYAN FİYATLAR</p><p style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: ICON_COLOR }}>{evt.price} ETH</p></div>
+                                                <button style={detailBtn}>İncele</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    );
+                })()}
             </div>
         </div>
     );
 }
 
 // -----------------------------------------------------------------------------------------
-// --- STİLLER (AYNEN KORUNDU) ---
+// --- STİLLER ---
 // -----------------------------------------------------------------------------------------
 const heroWrapperStyle: React.CSSProperties = { position: 'relative', height: '500px', width: '100%', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white' };
 const heroOverlayStyle: React.CSSProperties = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.9) 100%)' };
 const heroContentStyle: React.CSSProperties = { position: 'relative', zIndex: 2, textAlign: 'center', marginBottom: '60px' };
 const searchBarStyle: React.CSSProperties = { position: 'absolute', bottom: '-40px', zIndex: 10, backgroundColor: 'white', padding: '15px 30px', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '25px', boxShadow: '0 25px 80px rgba(0,0,0,0.4)', border: '1px solid rgba(0,0,0,0.05)', maxWidth: '950px', width: '90%' };
-const searchGroupStyle: React.CSSProperties = { flex: 1, display: 'flex', flexDirection: 'column' };
+const searchGroupStyle: React.CSSProperties = { flex: 1, display: 'flex', flexDirection: 'column', width: '100%' };
 const labelStyle: React.CSSProperties = { fontSize: '10px', fontWeight: '800', color: '#999', letterSpacing: '1px', marginBottom: '5px' };
 const inputStyle: React.CSSProperties = { border: 'none', outline: 'none', fontSize: '15px', fontWeight: '600', width: '100%', color: '#333', background: 'transparent' };
 const dividerStyle: React.CSSProperties = { width: '1px', height: '40px', backgroundColor: '#eee' };
@@ -430,7 +496,7 @@ const mapsLinkStyle: React.CSSProperties = { fontSize: '13px', color: '#007bff',
 const buyModalBtnStyle: React.CSSProperties = { padding: '15px', backgroundColor: ICON_COLOR, color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px', boxShadow: `0 5px 15px ${ICON_COLOR}55` };
 
 const createBtnStyle: React.CSSProperties = {
-    padding: '10px 20px', backgroundColor: '#1e293b', color: 'white', border: 'none', 
-    borderRadius: '20px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', 
+    padding: '10px 20px', backgroundColor: '#1e293b', color: 'white', border: 'none',
+    borderRadius: '20px', fontWeight: '700', fontSize: '13px', cursor: 'pointer',
     boxShadow: '0 4px 10px rgba(0,0,0,0.1)', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '6px'
 };
