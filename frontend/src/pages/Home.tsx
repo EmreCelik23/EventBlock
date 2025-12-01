@@ -442,7 +442,7 @@ export default function Home() {
                                             <h3 style={cardTitle}>{evt.name}</h3>
                                             <p style={cardLocation}>📍 {evt.locationStr.length > 40 ? evt.locationStr.substring(0, 40) + '...' : evt.locationStr}</p>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', marginTop: '15px' }}>
-                                                <div><p style={{ margin: 0, fontSize: '11px', color: '#999', fontWeight: '700' }}>BAŞLAYAN FİYATLAR</p><p style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: ICON_COLOR }}>{evt.price} ETH</p></div>
+                                                <div><p style={{ margin: 0, fontSize: '11px', color: '#999', fontWeight: '700' }}>FİYAT</p><p style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: ICON_COLOR }}>{evt.price} ETH</p></div>
                                                 <button style={detailBtn}>İncele</button>
                                             </div>
                                         </div>
