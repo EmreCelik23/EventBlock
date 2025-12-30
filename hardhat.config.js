@@ -9,7 +9,6 @@ dotenv.config();
 const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL || "";
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "";
 
-// Tek bir profile objesi tanımlıyoruz, hem default hem production bunu kullanacak
 const solidityProfile = {
   version: "0.8.23",
   settings: {
@@ -17,14 +16,13 @@ const solidityProfile = {
       enabled: true,
       runs: 200,
     },
-    viaIR: true, // ← derleyicinin ısrarla istediği ayar
+    viaIR: true, 
   },
 };
 
 export default defineConfig({
   plugins: [hardhatEthers, hardhatIgnitionEthers],
 
-  // 🔥 Burada artık build profile’ları açıkça override ediyoruz
   solidity: {
     profiles: {
       default: solidityProfile,
